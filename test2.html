@@ -18,8 +18,8 @@
             //image.src = 'http://userserve-ak.last.fm/serve/252/254612.jpg';
             //image.src = 'http://danyo.co.uk/stuff/bob.png';
             //image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
-            //image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
-            image.src = 'http://userserve-ak.last.fm/serve/252/47493919.png';
+            image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
+            //image.src = 'http://userserve-ak.last.fm/serve/252/47493919.png';
 
             var context = document.getElementById('test').getContext('2d');
             image.onload = function () {
@@ -61,7 +61,8 @@
                         } else if (average < 0 ) {
                             result = delta;
                         } else {
-                            result = delta - average;
+                            sub = delta - (deltaL > deltaR ? deltaR : deltaL);
+                            result = delta - sub;
                         }
 
                     } else if (delta < 0) {
@@ -71,9 +72,12 @@
                         } else if (average > 0) {
                             result = delta;
                         } else {
-                            result = delta - average
+                            result = delta - (deltaL < deltaR ? deltaR: deltaL);
                         }
-                        if (result > 0) result = 0;
+
+                        if (result > 0) {
+                            result = 0;
+                        }
 
                     } 
                     
@@ -85,7 +89,8 @@
                 }
 
                 polarise = function(input) {
-                    return input > 0 ? 0 : 255;
+                    var noiseCorrection = 6;
+                    return input > noiseCorrection ? 0 : 255;
                 }
 
                 build = function(index, r,g,b) {
