@@ -42,39 +42,14 @@
                     var deltaL = data[index] - data[index-4];
                     var deltaR = data[index+9] - data[index+4];
 
+
+                    
+                    
                     var average = (deltaL + deltaR) / 2;
 
                     //0  ≤ ∆ ≤ ∆C	if	∆C ≥ 0
                     //∆C ≤ ∆ ≤ 0    if	∆C ≤ 0
-                    var result;
-
-                    if (delta == 0) {
-
-                        result = delta;
-                    } else if (delta > 0) {
-                        
-                        if (average > delta) { 
-                            result = 0;
-                        } else if (average < 0 ) {
-                            result = delta;
-                        } else {
-                            result = delta - average;
-                        }
-
-                    } else if (delta < 0) {
-                        
-                        if (average < delta) {
-                            result = 0;
-                        } else if (average > 0) {
-                            result = delta;
-                        } else {
-                            result = delta - average
-                        }
-                        if (result > 0) result = 0;
-
-                    } 
-                    
-                    return result;
+                    return Math.abs(delta - average);
                 }
 
                 average = function(r,g,b) {

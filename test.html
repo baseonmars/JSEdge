@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+
+    <head>
+
+        <title>Canvas Test</title>
+    </head>
+
+    <body>
+
+        <canvas id="test" width="500" height="500">
+        <p>well that sucks</p>
+        </canvas>
+
+        <script>
+
+            var image = new Image();
+            image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
+
+            var context = document.getElementById('test').getContext('2d');
+            image.onload = function () {
+
+                context.drawImage(image, 0,0);
+                imageData = context.getImageData(0,0,image.width,image.height);
+
+                // red, green, blue, and alpha
+
+                getDelta = function(imageData, index) {
+                    var data = imageData.data;
+                    return data[index] - ((data[index-4] + data[index+4]) / 2);
+                }
+
+                red = [];
+                blue = [];
+                green = [];
+                alpha = [];
+
+
+                for (x = 4; x < (imageData.width - 4); x++) {
+
+                    for (y = 4; y < (imageData.height - 4); y++) {
+
+                        var index = 4 * (y * (imageData.width - 4)+ x);
+                        red.push( getDelta(imageData, index) );
+                        green.push( getDelta(imageData, index + 1) );
+                        blue.push( getDelta(imageData, index + 2) );
+                        alpha.push( getDelta(imageData, index + 3) );
+                    }
+                }
+
+                factor = function (imageData, size) {
+
+                    for(x = 0; x < (imageData.width - size); x += size) {
+
+                        for (y = 0; y < (imageData.height - size) y += size) {
+
+                            var index = (y * (imageData.width) + x);
+
+                            var lineTotal = 0;
+                            for (i = 0; i < size; i++) {
+                                lineTotal += 
+                              
+
+
+                        }
+                    }
+
+
+                }
+
+
+            }
+
+
+        </script>
+
+    </body>
+
+</html>
