@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+
+    <head>
+
+        <title>Canvas Test</title>
+    </head>
+
+    <body>
+
+        <canvas id="test" width="500" height="500">
+        <p>well that sucks</p>
+        </canvas>
+
+        <script>
+
+            var image = new Image();
+            //image.src = 'http://userserve-ak.last.fm/serve/252/254612.jpg';
+            image.src = 'http://danyo.co.uk/stuff/bob.png';
+
+            var context = document.getElementById('test').getContext('2d');
+            image.onload = function () {
+
+                context.drawImage(image, 0,0);
+                imageData = context.getImageData(0,0,image.width,image.height);
+
+                // red, green, blue, and alpha
+
+
+                red = [];
+                blue = [];
+                green = [];
+                alpha = [];
+                all = context.createImageData(252,378);
+
+                
+                getDelta = function(imageData, index) {
+                    var data = imageData.data;
+                    //∆C ≡ in+1 − in.
+                    var delta = data[index+4] - data[index];
+                    //∆L ≡in −in−1	and	∆R ≡in+2 −in+1.
+                    var deltaL = data[index] - data[index-4];
+                    var deltaR = data[index+9] - data[index+4];
+
+                    var average = (deltaL + deltaR) / 2;
+
+                    //0  ≤ ∆ ≤ ∆C	if	∆C ≥ 0
+                    //∆C ≤ ∆ ≤ 0    if	∆C ≤ 0
+                    var result;
+
+                    if (delta == 0) {
+
+                        result = delta;
+                    } else if (delta > 0) {
+                        
+                        if (average > delta) { 
+                            result = 0;
+                        } else if (average < 0 ) {
+                            result = delta;
+                        } else {
+                            result = delta - average;
+                        }
+
+                    } else if (delta < 0) {
+                        
+                        if (average < delta) {
+                            result = 0;
+                        } else if (average > 0) {
+                            result = delta;
+                        } else {
+                            result = delta - average
+                        }
+                        if (result > 0) result = 0;
+
+                    } 
+                    
+                    return result;
+                }
+
+                average = function(r,g,b) {
+                    return Math.abs(parseInt((r+g+b)/3));
+                }
+
+                build = function(index, r,g,b) {
+                    var grey = average(r,g,b); 
+                    all.data[index] = r //grey;
+                    all.data[index+1] = g// 255//grey;
+                    all.data[index+2] = b;
+                    all.data[index+3] = 255;
+              }
+
+                for (x = 0; x < (imageData.width); x++) {
+
+                    for (y = 0; y < (imageData.height); y++) {
+
+                        var index = 4 * (y * (imageData.width)+ x);
+                        r = getDelta(imageData, index);
+                        g = getDelta(imageData, index + 1);
+                        b = getDelta(imageData, index + 2); 
+                        build(index, r,g,b)
+                    }
+
+                }
+
+                context.putImageData(all, 0,0);
+            }
+
+
+        </script>
+
+    </body>
+
+</html>
