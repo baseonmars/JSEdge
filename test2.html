@@ -16,7 +16,10 @@
 
             var image = new Image();
             //image.src = 'http://userserve-ak.last.fm/serve/252/254612.jpg';
-            image.src = 'http://danyo.co.uk/stuff/bob.png';
+            //image.src = 'http://danyo.co.uk/stuff/bob.png';
+            //image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
+            //image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
+            image.src = 'http://userserve-ak.last.fm/serve/252/47493919.png';
 
             var context = document.getElementById('test').getContext('2d');
             image.onload = function () {
@@ -74,18 +77,22 @@
 
                     } 
                     
-                    return result > 20 ? 0 : 255;
+                    return result;
                 }
 
                 average = function(r,g,b) {
-                    return Math.abs(parseInt((r+g+b)/3));
+                    return polarise(Math.abs(parseInt((r+g+b)/3)));
+                }
+
+                polarise = function(input) {
+                    return input > 0 ? 0 : 255;
                 }
 
                 build = function(index, r,g,b) {
                     var grey = average(r,g,b); 
-                    all.data[index] = r //grey;
-                    all.data[index+1] = g// 255//grey;
-                    all.data[index+2] = b;
+                    all.data[index] = grey;
+                    all.data[index+1] = grey;
+                    all.data[index+2] = grey;
                     all.data[index+3] = 255;
               }
 
@@ -107,7 +114,6 @@
 
 
         </script>
-
     </body>
 
 </html>
