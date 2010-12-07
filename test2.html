@@ -16,10 +16,12 @@
 
             var image = new Image();
             //image.src = 'http://userserve-ak.last.fm/serve/252/254612.jpg';
-            //image.src = 'http://danyo.co.uk/stuff/bob.png';
+            image.src = 'http://danyo.co.uk/stuff/bob.png';
             //image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
-            image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
+            //image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
             //image.src = 'http://userserve-ak.last.fm/serve/252/47493919.png';
+            //image.src = 'http://farm5.static.flickr.com/4067/5126215174_f7c556c026_z.jpg'
+            image.src = "http://danyo.co.uk/stuff/nicky-grey.jpg";
 
             var context = document.getElementById('test').getContext('2d');
             image.onload = function () {
@@ -29,92 +31,90 @@
 
                 // red, green, blue, and alpha
 
-
                 red = [];
                 blue = [];
                 green = [];
                 alpha = [];
-                all = context.createImageData(image.width,image.height);
+                horizontal = context.createImageData(image.width,image.height);
 
-                
-                getDelta = function(imageData, index) {
+                getHDelta = function(imageData, index) {
+                    var delta;
                     var data = imageData.data;
-                    //∆C ≡ in+1 − in.
-                    var delta = data[index+4] - data[index];
-                    //∆L ≡in −in−1	and	∆R ≡in+2 −in+1.
+                    //∆C ≡ in+1 − in
+                    var deltaC = data[index+4] - data[index];
+                    //∆L ≡ in − in−1	
                     var deltaL = data[index] - data[index-4];
+                    //∆R ≡ in+2 − in+1
                     var deltaR = data[index+9] - data[index+4];
-
-                    var average = (deltaL + deltaR) / 2;
 
                     //0  ≤ ∆ ≤ ∆C	if	∆C ≥ 0
                     //∆C ≤ ∆ ≤ 0    if	∆C ≤ 0
-                    var result;
 
-                    if (delta == 0) {
+                    if (deltaC >= 0) {
 
-                        result = delta;
-                    } else if (delta > 0) {
-                        
-                        if (average > delta) { 
-                            result = 0;
-                        } else if (average < 0 ) {
-                            result = delta;
-                        } else {
-                            sub = delta - (deltaL > deltaR ? deltaR : deltaL);
-                            result = delta - sub;
+                        if (deltaL == deltaR && deltaL > deltaC) { 
+                            delta = 0;
+                            } else if (deltaL == deltaR && deltaL < 0 ) {
+                            delta = deltaC;
+                            } else {
+                            delta = deltaC - (deltaL > deltaR ? deltaR : deltaL);
+                            if (delta < 0) {
+                                delta = 0;
+                            } else if (delta >= deltaC) {
+                                delta = deltaC;
+                            }
                         }
 
-                    } else if (delta < 0) {
-                        
-                        if (average < delta) {
-                            result = 0;
-                        } else if (average > 0) {
-                            result = delta;
-                        } else {
-                            result = delta - (deltaL < deltaR ? deltaR: deltaL);
+                        } else if (deltaC <= 0) {
+
+                        if (deltaL == deltaR && deltaL < deltaC && deltaR < deltaC) {
+                            delta = 0;
+                            } else if (deltaL == deltaR && deltaL > 0) {
+                            delta = deltaC;
+                            } else {
+                            delta = deltaC - (deltaL < deltaR ? deltaR: deltaL);
+                            if (delta > 0) {
+                                delta = 0;
+                            } else if (delta <= deltaC) {
+                                delta = deltaC;
+                            }
                         }
 
-                        if (result > 0) {
-                            result = 0;
-                        }
 
                     } 
-                    
-                    return result;
+
+                    return 128 - delta;
+                };
+
+
+                // add together 30% of the red value, 59% of the green value,
+                // and 11% of the blue value
+                greyscale = function(r,g,b) {
+                    return r * 0.30 + g * 0.59 + b * 0.11 ;
                 }
 
-                average = function(r,g,b) {
-                    return polarise(Math.abs(parseInt((r+g+b)/3)));
+                build = function(index, imageData, r,g,b) {
+                    var grey = greyscale(r,g,b); 
+                    imageData.data[index] = grey;
+                    imageData.data[index+1] = grey;
+                    imageData.data[index+2] = grey;
+                    imageData.data[index+3] = 255;
                 }
-
-                polarise = function(input) {
-                    var noiseCorrection = 6;
-                    return input > noiseCorrection ? 0 : 255;
-                }
-
-                build = function(index, r,g,b) {
-                    var grey = average(r,g,b); 
-                    all.data[index] = grey;
-                    all.data[index+1] = grey;
-                    all.data[index+2] = grey;
-                    all.data[index+3] = 255;
-              }
 
                 for (x = 0; x < (imageData.width); x++) {
 
                     for (y = 0; y < (imageData.height); y++) {
 
                         var index = 4 * (y * (imageData.width)+ x);
-                        r = getDelta(imageData, index);
-                        g = getDelta(imageData, index + 1);
-                        b = getDelta(imageData, index + 2); 
-                        build(index, r,g,b)
+                        r = getHDelta(imageData, index);
+                        g = getHDelta(imageData, index + 1);
+                        b = getHDelta(imageData, index + 2); 
+                        build(index, horizontal,r,g,b);
                     }
 
                 }
 
-                context.putImageData(all, 0,0);
+                context.putImageData(horizontal, 0,0);
             }
 
 
