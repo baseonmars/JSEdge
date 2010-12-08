@@ -12,11 +12,12 @@
         <p>well that sucks</p>
         </canvas>
 
+        <script src="edge.js"></script>
         <script>
 
             var image = new Image();
             //image.src = 'http://userserve-ak.last.fm/serve/252/254612.jpg';
-            image.src = 'http://danyo.co.uk/stuff/bob.png';
+            //image.src = 'http://danyo.co.uk/stuff/bob.png';
             //image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
             //image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
             //image.src = 'http://userserve-ak.last.fm/serve/252/47493919.png';
@@ -25,8 +26,6 @@
 
             var context = document.getElementById('test').getContext('2d');
             image.onload = function () {
-
-                context.drawImage(image, 0,0);
                 imageData = context.getImageData(0,0,image.width,image.height);
 
                 // red, green, blue, and alpha
@@ -35,9 +34,9 @@
                 blue = [];
                 green = [];
                 alpha = [];
-                horizontal = context.createImageData(image.width,image.height);
+                vertical = context.createImageData(image.width,image.height);
 
-                getHDelta = function(imageData, index) {
+                getVDelta = function(imageData, index) {
                     var delta;
                     var data = imageData.data;
                     //∆C ≡ in+1 − in
@@ -45,7 +44,7 @@
                     //∆L ≡ in − in−1	
                     var deltaL = data[index] - data[index-4];
                     //∆R ≡ in+2 − in+1
-                    var deltaR = data[index+9] - data[index+4];
+                    var deltaR = data[index+8] - data[index+4];
 
                     //0  ≤ ∆ ≤ ∆C	if	∆C ≥ 0
                     //∆C ≤ ∆ ≤ 0    if	∆C ≤ 0
@@ -67,7 +66,7 @@
 
                         } else if (deltaC <= 0) {
 
-                        if (deltaL == deltaR && deltaL < deltaC && deltaR < deltaC) {
+                        if (deltaL == deltaR && deltaL < deltaC) {
                             delta = 0;
                             } else if (deltaL == deltaR && deltaL > 0) {
                             delta = deltaC;
@@ -83,7 +82,7 @@
 
                     } 
 
-                    return 128 - delta;
+                    return 127 - delta;
                 };
 
 
@@ -106,15 +105,22 @@
                     for (y = 0; y < (imageData.height); y++) {
 
                         var index = 4 * (y * (imageData.width)+ x);
-                        r = getHDelta(imageData, index);
-                        g = getHDelta(imageData, index + 1);
-                        b = getHDelta(imageData, index + 2); 
-                        build(index, horizontal,r,g,b);
+                        r = getVDelta(imageData, index);
+                        g = getVDelta(imageData, index + 1);
+                        b = getVDelta(imageData, index + 2); 
+                        build(index, vertical,r,g,b);
                     }
 
                 }
 
-                context.putImageData(horizontal, 0,0);
+                go = function go() {
+                console.log((new Date()).getTime()); 
+                    for (x = 1; x < 200; x++) {
+                        e = new Edge(image, context); e.buildResult(); 
+                    }
+                console.log((new Date()).getTime()); 
+                }
+                
             }
 
 
