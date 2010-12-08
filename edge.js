@@ -2,11 +2,16 @@
  * @constructor
  * @param {Image} image Image object
  */
-var Edge = function (image, context) {
+var Edge = function (image, canvas) {
 
-    this.imageData = context.getImageData(0,0,image.width,image.height);
+    this.canvas = document.getElementById(canvas);
+    this.canvas.width = image.width;
+    this.canvas.height = image.height;
+    this.context = this.canvas.getContext('2d');
+    this.context.drawImage(image, 0,0);
+    this.imageData = this.context.getImageData(0,0,image.width,image.height);
     this.pixels = this.imageData.data;
-    this.verticalData = context.createImageData(image.width,image.height);
+    this.verticalData = this.context.createImageData(image.width,image.height);
     this.width = this.imageData.width;
     this.height = this.imageData.height;
 };
@@ -20,7 +25,6 @@ var Edge = function (image, context) {
  */
 Edge.prototype.calcEdge = function (pb, pc, pa, pa2) {
 
-     
     var deltaL = pc - pb;  // ∆L ≡ in − in−1
     var deltaR = pa2 - pa; // ∆R ≡ in+2 − in+1
     var deltaC = pa - pc;  // ∆C ≡ in+1 − in
@@ -87,6 +91,7 @@ Edge.prototype.buildResult = function () {
 
     }
 };
+
 
 /**
  * add together 30% of the red value, 59% of the green value,
