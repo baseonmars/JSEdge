@@ -8,7 +8,7 @@
 
     <body>
 
-        <canvas id="test" width="500" height="500">
+        <canvas id="test" width="1" height="1">
         <p>well that sucks</p>
         </canvas>
 
@@ -18,27 +18,40 @@
             var image = new Image();
             //image.src = 'http://userserve-ak.last.fm/serve/252/254612.jpg';
             //image.src = 'http://danyo.co.uk/stuff/bob.png';
-            image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
+            //image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
             //image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
             //image.src = 'http://userserve-ak.last.fm/serve/252/47493919.png';
-            //image.src = 'http://farm5.static.flickr.com/4067/5126215174_f7c556c026_z.jpg'
-            //image.src = "http://danyo.co.uk/stuff/nicky-grey.jpg";
+            //image.src = 'http://farm5.static.flickr.com/4067/5126215174_f7c556c026_z.jpg';
+            //image.src = 'http://assassinationscience.com/johncostella/edgedetect/images/matt.png';
+            image.src = "http://danyo.co.uk/stuff/nicky-grey.jpg";
+            //image.src = 'http://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Broadway_tower_edit.jpg/274px-Broadway_tower_edit.jpg'
+            //image.src = 'http://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Broadway_tower_edit.jpg/800px-Broadway_tower_edit.jpg'
+            //image.src = 'http://www.dansdata.com/images/blog/rsizr/IMG_9809_1280.jpg'
+            //image.src=  'http://www.cs.cmu.edu/afs/andrew/scs/cs/15-463/f07/proj2/www/wwedler/gateway_arch.jpg'
+            //image.src = 'http://3.bp.blogspot.com/_h79Be84WZ2U/TECykCpoj_I/AAAAAAAAAGc/Dy1Nw6gbWq8/s800/illaroja.jpg'
+            //image.src = 'http://assassinationscience.com/johncostella/edgedetect/images/gray.png'
 
 
-
-                go = function go() {
-                    start = ((new Date()).getTime()); 
-                    for (x = 1; x < 200; x++) {
-                        e = new Edge(image, 'test'); 
-                        e.buildResult(); 
-                    }
-                    e.context.putImageData(e.verticalData, 0, 0);
-                    end = ((new Date()).getTime()); 
-                    console.log(end - start);
+            document.body.onload = function () {
+                e = new Edge(image, 'test'); 
+                function goV() {
+                    e.verticalIterator(); 
+                    e.context.putImageData(e.verticalData, 0,0);
                 }
-                
 
+                function goH() {
+                    e.horizontalIterator();
+                    e.context.putImageData(e.horizontalData, 0,0);
+                }
 
+                function goM () {
+                    e.advancedMagnitude();
+                    e.context.putImageData(e.magnitudeData, 0,0);
+                }
+                setTimeout(function () {goH()}, 2000);
+                setTimeout(function () {goV()}, 4000);
+                setTimeout(function () {goM()}, 6000);
+            }
         </script>
     </body>
 
