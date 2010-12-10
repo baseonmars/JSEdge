@@ -15,6 +15,7 @@ var Edge = function (image, canvas) {
     this.pixels = this.imageData.data;
     this.verticalData = this.context.createImageData(image.width,image.height);
     this.horizontalData = this.context.createImageData(image.width,image.height);
+    this.magnitudeData = this.context.createImageData(image.width,image.height);
 };
 
 /**
@@ -66,100 +67,105 @@ Edge.prototype.calcEdge = function calcEdge(pb, pc, pa, pa2) {
 
     } 
 
-    return 127 - delta;
+    return delta;
 };
 
 
 Edge.prototype.buildPixel = function buildPixel(index, offset, acc) {
 
-    var pixels = this.pixels; 
-    var red = pixels[index];
-    var green = pixels[index + 1];
-    var blue = pixels[index + 2];
-    var pc  = red * 0.30 + green * 0.59 + blue * 0.11;
-        red = pixels[index + -offset]; 
-        green = pixels[index + 1 + -offset];
-        blue = pixels[index + 2 + -offset];
-    var pb  = red * 0.30 + green * 0.59 + blue * 0.11;
-        red = pixels[index + offset];
-        green = pixels[index + 1 + offset];
-        blue = pixels[index + 2 + offset];
-    var pa  = red * 0.30 + green * 0.59 + blue * 0.11;
-        red = pixels[index + offset*2], 
-        green = pixels[index + 1 + offset*2],
-        blue = pixels[index + 2 + offset*2]
-    var pa2 = red * 0.30 + green * 0.59 + blue * 0.11;
 
-    var edge = this.calcEdge(pb, pc, pa, pa2);
-    this.writePixel(acc, index, edge, edge, edge, 255);
+    var pixels = this.pixels; 
+    var red = index ;
+    var green = index + 1;
+    var blue = index + 2;
+
+    var pc = pixels[red] * 0.30 + 
+        pixels[green] * 0.59 + 
+        pixels[blue] * 0.11;
+
+    var pb = pixels[red + -offset] * 0.30 + 
+        pixels[green + -offset] * 0.59 + 
+        pixels[blue + -offset] * 0.11;
+
+    var pa = pixels[red + offset] * 0.30 + 
+        pixels[green + offset] * 0.59 +
+        pixels[blue + offset] * 0.11;
+
+    var pa2 = pixels[red + offset*2] * 0.30 +
+        pixels[green + offset*2] * 0.59 + 
+        pixels[blue + offset*2] * 0.11;
+
+    //var edge = this.calcEdge(pb, pc, pa, pa2);
+
+    var deltaL = pc - pb;  // ∆L ≡ in − in−1
+    var deltaR = pa2 - pa; // ∆R ≡ in+2 − in+1
+    var deltaC = pa - pc;  // ∆C ≡ in+1 − in
+
+    /**
+     * 0  ≤ ∆ ≤ ∆C  if	∆C ≥ 0
+     * ∆C ≤ ∆ ≤ 0   if	∆C ≤ 0
+     */
+    if (deltaC >= 0) {
+
+        if (deltaL == deltaR && deltaL > deltaC) { 
+            delta = 0;
+        } else if (deltaL == deltaR && deltaL < 0 ) {
+            delta = deltaC;
+        } else {
+            delta = deltaC - (deltaL > deltaR ? deltaR : deltaL);
+            if (delta < 0) {
+                delta = 0;
+            } else if (delta >= deltaC) {
+                delta = deltaC;
+            }
+        }
+
+    } else if (deltaC <= 0) {
+
+        if (deltaL == deltaR && deltaL < deltaC) {
+            delta = 0;
+        } else if (deltaL == deltaR && deltaL > 0) {
+            delta = deltaC;
+        } else {
+            delta = deltaC - (deltaL < deltaR ? deltaR: deltaL);
+            if (delta > 0) {
+                delta = 0;
+            } else if (delta <= deltaC) {
+                delta = deltaC;
+            }
+        }
+
+    } 
+
+    var edge = delta;
+
+    acc.data[index]   = edge;
+    acc.data[index+1] = edge;
+    acc.data[index+2] = edge;
+    acc.data[index+3] = 255;
 
     }
 
-Edge.prototype.verticalIterator = function verticalIterator() {
+Edge.prototype.mapVertical = function mapVertical() {
 
     var width = this.width;
     var height = this.height;
 
-    for (var x = this.width; x >= 0; --x) {
-        for (var y = height; y >= 0; --y) {
+    for (var x = width - 1; x >= 0; x--) {
+        for (var y = height - 1; y >= 0; y--) {
 
             var index = 4 * (y * (width) + x);
-            var offset = this.width * 4;
-            var acc = this.verticalData;
-            var pixels = this.pixels; 
-            var red = pixels[index];
-            var green = pixels[index + 1];
-            var blue = pixels[index + 2];
-            var pc  = red * 0.30 + green * 0.59 + blue * 0.11;
-            red = pixels[index + -offset]; 
-            green = pixels[index + 1 + -offset];
-            blue = pixels[index + 2 + -offset];
-            var pb  = red * 0.30 + green * 0.59 + blue * 0.11;
-            red = pixels[index + offset];
-            green = pixels[index + 1 + offset];
-            blue = pixels[index + 2 + offset];
-            var pa  = red * 0.30 + green * 0.59 + blue * 0.11;
-            red = pixels[index + offset*2]; 
-            green = pixels[index + 1 + offset*2];
-            blue = pixels[index + 2 + offset*2];
-            var pa2 = red * 0.30 + green * 0.59 + blue * 0.11;
-
-            var edge = this.calcEdge(pb, pc, pa, pa2);
-            this.writePixel(acc, index, edge, edge, edge, 127);
+            this.buildPixel.call(this, index, this.width * 4, this.verticalData);
         }
     }
 };
 
-Edge.prototype.horizontalIterator = function horizontalIterator() {
+Edge.prototype.mapHorizontal = function mapHorizontal() {
 
     var length = this.pixels.length;
-    var height = this.height;
-    for (var x = 0; x < (length-4); x += 4) {
+    for (var index = length-8; index >= 4; index -= 4) {
 
-        var index = x;
-        var offset = 4;
-        var acc = this.horizontalData;
-        var pixels = this.pixels; 
-        var red = pixels[index];
-        var green = pixels[index + 1];
-        var blue = pixels[index + 2];
-        var pc  = red * 0.30 + green * 0.59 + blue * 0.11;
-        red = pixels[index + -offset]; 
-        green = pixels[index + 1 + -offset];
-        blue = pixels[index + 2 + -offset];
-        var pb  = red * 0.30 + green * 0.59 + blue * 0.11;
-        red = pixels[index + offset];
-        green = pixels[index + 1 + offset];
-        blue = pixels[index + 2 + offset];
-        var pa  = red * 0.30 + green * 0.59 + blue * 0.11;
-        red = pixels[index + offset*2]; 
-        green = pixels[index + 1 + offset*2];
-        blue = pixels[index + 2 + offset*2];
-        var pa2 = red * 0.30 + green * 0.59 + blue * 0.11;
-
-        var edge = this.calcEdge(pb, pc, pa, pa2);
-        this.writePixel(acc, index, edge, edge, edge, 127);
-
+        this.buildPixel.call(this, index, 4, this.horizontalData);
     }
 };
 
@@ -203,3 +209,48 @@ Edge.prototype.writePixel = function writePixel(imageData, index, red, green, bl
     imageData.data[index+2] = blue  || red;
     imageData.data[index+3] = alpha || 255;
 };
+
+Edge.prototype.magnitude = function magnitude() {
+
+    var vData = this.verticalData.data;
+    var hData = this.horizontalData.data;
+    var mData = this.magnitudeData.data;
+
+    for (var i = 0; i < (vData.length - 4); i+=4) {
+
+        var result = Math.abs(vData[i]) + Math.abs(hData[i]); 
+        mData[i] = result;
+        mData[i+1] = result;
+        mData[i+2] = result;
+        mData[i+3] = 255;
+    }
+}
+
+Edge.prototype.mapMagnitude = function mapMagnitude() {
+
+    var vData = this.verticalData.data;
+    var hData = this.horizontalData.data;
+    var mData = this.magnitudeData.data;
+
+    for (var i = 0; i < (vData.length - 4); i+=4) {
+
+        var up = hData[i - this.width *4];
+        var down = hData[i + this.width *4];
+        var left = vData[i - 4];
+        var right = vData[i + 4];
+
+        var vAv = (up + down)/2;
+        var hAv = (left + right)/2;
+
+        var result = Math.abs(Math.sqrt(vAv*vAv + hAv*hAv) - 255) || 255;
+        
+        //var result = (Math.abs(vAv) + Math.abs(hAv));
+        mData[i] = result;
+        mData[i+1] = result;
+        mData[i+2] = result;
+        mData[i+3] = 255;
+    }
+}
+
+
+

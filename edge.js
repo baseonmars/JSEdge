@@ -73,17 +73,17 @@ Edge.prototype.calcEdge = function calcEdge(pb, pc, pa, pa2) {
 
 Edge.prototype.buildPixel = function buildPixel(index, offset, acc) {
 
-            var pc  = this.greyscale(this.getRGBPixel(this.pixels, index,  0));
-            var pb  = this.greyscale(this.getRGBPixel(this.pixels, index, -offset)); 
-            var pa  = this.greyscale(this.getRGBPixel(this.pixels, index,  offset));
-            var pa2 = this.greyscale(this.getRGBPixel(this.pixels, index,  offset*2));
+    var pc  = this.greyscale(this.getRGBPixel(this.pixels, index,  0));
+    var pb  = this.greyscale(this.getRGBPixel(this.pixels, index, -offset)); 
+    var pa  = this.greyscale(this.getRGBPixel(this.pixels, index,  offset));
+    var pa2 = this.greyscale(this.getRGBPixel(this.pixels, index,  offset*2));
 
-            var edge = this.calcEdge(pb, pc, pa, pa2);
-            this.writePixel(acc, index, edge, edge, edge, 255);
+    var edge = this.calcEdge(pb, pc, pa, pa2);
+    this.writePixel(acc, index, edge, edge, edge, 255);
 
     }
 
-Edge.prototype.verticalIterator = function verticalIterator() {
+Edge.prototype.mapVertical = function mapVertical() {
 
     var width = this.width;
     var height = this.height;
@@ -97,7 +97,7 @@ Edge.prototype.verticalIterator = function verticalIterator() {
     }
 };
 
-Edge.prototype.horizontalIterator = function horizontalIterator() {
+Edge.prototype.mapHorizontal = function mapHorizontal() {
 
     var length = this.pixels.length;
     var height = this.height;
@@ -165,7 +165,7 @@ Edge.prototype.magnitude = function magnitude() {
     }
 }
 
-Edge.prototype.advancedMagnitude = function advancedMagnitude() {
+Edge.prototype.mapMagnitude = function mapMagnitude() {
 
     var vData = this.verticalData.data;
     var hData = this.horizontalData.data;
