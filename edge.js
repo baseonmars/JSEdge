@@ -73,10 +73,11 @@ Edge.prototype.calcEdge = function calcEdge(pb, pc, pa, pa2) {
 
 Edge.prototype.buildPixel = function buildPixel(index, offset, acc) {
 
-    var pc  = this.greyscale(this.getRGBPixel(this.pixels, index,  0));
-    var pb  = this.greyscale(this.getRGBPixel(this.pixels, index, -offset)); 
-    var pa  = this.greyscale(this.getRGBPixel(this.pixels, index,  offset));
-    var pa2 = this.greyscale(this.getRGBPixel(this.pixels, index,  offset*2));
+    var pixels = this.pixels;
+    var pc  = this.greyscale(this.getRGBPixel(pixels, index,  0));
+    var pb  = this.greyscale(this.getRGBPixel(pixels, index, -offset)); 
+    var pa  = this.greyscale(this.getRGBPixel(pixels, index,  offset));
+    var pa2 = this.greyscale(this.getRGBPixel(pixels, index,  offset*2));
 
     var edge = this.calcEdge(pb, pc, pa, pa2);
     this.writePixel(acc, index, edge, edge, edge, 255);
@@ -92,7 +93,7 @@ Edge.prototype.mapVertical = function mapVertical() {
         for (var y = 0; y < (height); y++) {
 
             var index = 4 * (y * (width) + x);
-            this.buildPixel.call(this, index, this.width * 4, this.verticalData);
+            this.buildPixel.call(this, index, width * 4, this.verticalData);
         }
     }
 };
@@ -108,6 +109,34 @@ Edge.prototype.mapHorizontal = function mapHorizontal() {
     }
 };
 
+Edge.prototype.mapMagnitude = function mapMagnitude() {
+
+    var vData = this.verticalData.data;
+    var hData = this.horizontalData.data;
+    var mData = this.magnitudeData.data;
+    var width = this.width;
+    var iWidth = this.width * 4;
+    var baseColor = 255;
+
+    for (var i = vData.length - iWidth - 4; i >= 0; i-=4) {
+
+        // TODO prevent edge comparisson from wrapping
+        var up = hData[i];
+        var down = hData[i + iWidth];
+        var left = vData[i];
+        var right = vData[i + 4];
+
+        var vav = (up + down)/2;
+        var hav = (left + right)/2;
+
+        result = 255 - Math.sqrt(Math.pow(vav,2) + Math.pow(hav,2));
+
+        mData[i] = result;
+        mData[i+1] = result;
+        mData[i+2] = result;
+        mData[i+3] = 255;
+    }
+}
 
 /**
  * add together 30% of the red value, 59% of the green value,
@@ -116,7 +145,7 @@ Edge.prototype.mapHorizontal = function mapHorizontal() {
  * @pixel {RBGPixel} pixel An Object with red, green and blue keys
  */
 Edge.prototype.greyscale = function greyscale(pixel) {
-    
+    //return Math.max(pixel['red'], pixel['green'], pixel['blue']); 
     return pixel['red'] * 0.30 + pixel['green'] * 0.59 + pixel['blue'] * 0.11;
 };
 
@@ -143,51 +172,11 @@ Edge.prototype.getRGBPixel = function getRGBPixel(pixels, index, offset) {
  * @param {Integer} alpha Value for alpha component of pixel
  */
 Edge.prototype.writePixel = function writePixel(imageData, index, red, green, blue, alpha) {
-    imageData.data[index]   = red;
-    imageData.data[index+1] = green || red;
-    imageData.data[index+2] = blue  || red;
-    imageData.data[index+3] = alpha || 255;
+    var data = imageData.data;
+    data[index]   = red;
+    data[index+1] = green || red;
+    data[index+2] = blue  || red;
+    data[index+3] = alpha || 255;
 };
 
-Edge.prototype.magnitude = function magnitude() {
-
-    var vData = this.verticalData.data;
-    var hData = this.horizontalData.data;
-    var mData = this.magnitudeData.data;
-
-    for (var i = 0; i < (vData.length - 4); i+=4) {
-
-        var result = Math.abs(vData[i]) + Math.abs(hData[i]); 
-        mData[i] = result;
-        mData[i+1] = result;
-        mData[i+2] = result;
-        mData[i+3] = 255;
-    }
-}
-
-Edge.prototype.mapMagnitude = function mapMagnitude() {
-
-    var vData = this.verticalData.data;
-    var hData = this.horizontalData.data;
-    var mData = this.magnitudeData.data;
-
-    for (var i = 0; i < (vData.length - 4); i+=4) {
-
-        var up = hData[i - this.width *4];
-        var down = hData[i + this.width *4];
-        var left = vData[i - 4];
-        var right = vData[i + 4];
-
-        var vAv = (up + down)/2;
-        var hAv = (left + right)/2;
-
-        var result = Math.abs(Math.sqrt(vAv*vAv + hAv*hAv) - 255) || 255;
-        
-        //var result = (Math.abs(vAv) + Math.abs(hAv));
-        mData[i] = result;
-        mData[i+1] = result;
-        mData[i+2] = result;
-        mData[i+3] = 255;
-    }
-}
 

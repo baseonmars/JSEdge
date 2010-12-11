@@ -6,8 +6,16 @@
         <title>Canvas Test</title>
         <style type="text/css">
 
+            body {
+                background-color: #bbb;
+                color: #333;
+            }
+
+            #container {
+                text-align: center;
+            }
             img, canvas { 
-                float: left;
+                display: inline-block;
             }
 
             h1, p {
@@ -19,41 +27,50 @@
         </style>
     </head>
 
-    <body onload="go()">
+    <body>
 
-        <div style="width: 960px">
-            <h1>Magnitude Map using Simple fast edge detection</h1>
-            <p>Taken from the paper written by John Costella at <a href="http://assassinationscience.com/johncostella/edgedetect/">http://assassinationscience.com/johncostella/edgedetect/</a></p>
-            <img src="http://danyo.co.uk/stuff/nicky.jpg" />
-            <canvas id="test" width="1" height="1">
+        <div id="container">
+            <h1>Magnitude Map </h1>
+            <p>Using a fast, efficient, and simple edge detection algorithm taken from the paper written by <a href="http://assassinationscience.com/johncostella/">John Costella</a></p>
+            <img id="candidate" /><canvas id="test" width="1" height="1">
                 <p>well that sucks</p>
             </canvas>
+            <form id="selector">
+                <select id="image_select"></select>
+                <input type="submit"/>
+            </form>
         <p id="result"></p> 
         </div>
 
-        <script src="edge-inline.js"></script>
+        <script src="edge.js"></script>
         <script>
 
             var image = new Image();
-            //image.src = 'http://userserve-ak.last.fm/serve/252/254612.jpg';
-            //image.src = 'http://danyo.co.uk/stuff/bob.png';
-            //image.src = 'http://userserve-ak.last.fm/serve/252/3614801.jpg';
-            //image.src = 'http://userserve-ak.last.fm/serve/252/2162238.jpg';
-            //image.src = 'http://userserve-ak.last.fm/serve/252/47493919.png';
-            //image.src = 'http://farm5.static.flickr.com/4067/5126215174_f7c556c026_z.jpg';
-            //image.src = 'http://assassinationscience.com/johncostella/edgedetect/images/matt.png';
-            image.src = "http://danyo.co.uk/stuff/nicky.jpg";
-            //image.src = 'http://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Broadway_tower_edit.jpg/274px-Broadway_tower_edit.jpg'
-            //image.src = 'http://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Broadway_tower_edit.jpg/800px-Broadway_tower_edit.jpg'
-            //image.src = 'http://www.dansdata.com/images/blog/rsizr/IMG_9809_1280.jpg'
-            //image.src=  'http://www.cs.cmu.edu/afs/andrew/scs/cs/15-463/f07/proj2/www/wwedler/gateway_arch.jpg'
-            //image.src = 'http://3.bp.blogspot.com/_h79Be84WZ2U/TECykCpoj_I/AAAAAAAAAGc/Dy1Nw6gbWq8/s800/illaroja.jpg'
-            //image.src = 'http://assassinationscience.com/johncostella/edgedetect/images/gray.png'
+            var images = [
+             'http://userserve-ak.last.fm/serve/252/254612.jpg',
+             'http://danyo.co.uk/stuff/bob.png',
+             'http://userserve-ak.last.fm/serve/252/3614801.jpg',
+             'http://userserve-ak.last.fm/serve/252/2162238.jpg',
+             'http://userserve-ak.last.fm/serve/252/47493919.png',
+             'http://farm5.static.flickr.com/4067/5126215174_f7c556c026_z.jpg',
+             'http://danyo.co.uk/edge/matt.png',
+             "http://danyo.co.uk/stuff/nicky.jpg",
+             'http://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Broadway_tower_edit.jpg/274px-Broadway_tower_edit.jpg',
+             'http://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Broadway_tower_edit.jpg/800px-Broadway_tower_edit.jpg',
+             'http://www.cs.cmu.edu/afs/andrew/scs/cs/15-463/f07/proj2/www/wwedler/gateway_arch.jpg',
+             'http://3.bp.blogspot.com/_h79Be84WZ2U/TECykCpoj_I/AAAAAAAAAGc/Dy1Nw6gbWq8/s800/illaroja.jpg',
+             'http://danyo.co.uk/edge/gray.png',
+             'http://farm5.static.flickr.com/4108/5174249969_e3a468f4b6.jpg',
+             'http://farm5.static.flickr.com/4154/5061928555_e65ccd5bb5_z.jpg',
+             'http://farm5.static.flickr.com/4106/4952538434_48522092bd.jpg',
+             'http://farm5.static.flickr.com/4136/4952510646_8ae378f4ec.jpg'
+             ];
 
-
-            var go = function () {
+            var go = function (image) {
                 var start = (new Date()).getTime();
+                document.getElementById('candidate').src = image.src;
                 e = new Edge(image, 'test'); 
+                //console.profile('edge')
                 function goV() {
                     e.mapVertical(); 
                 }
@@ -68,9 +85,28 @@
                 goH();
                 goV();
                 goM();
+                //console.profileEnd();
                 var end = (new Date()).getTime();
                 e.context.putImageData(e.magnitudeData, 0,0);
                 document.getElementById('result').innerHTML = "Completed in " + ((end - start)/1000) + ' seconds';
+            }
+
+            var select = document.getElementById('image_select');
+
+            for (var i = 0; i < images.length; i++) {
+
+                var opt = document.createElement('option');
+                opt.text = images[i];
+                opt.value = images[i];
+                select.appendChild(opt);
+            }
+
+            document.getElementById('image_select').onchange = function () {
+                image.onload = function () {
+                    go(image);
+                }
+                image.src = this.value;
+                return false;
             }
         </script>
     </body>

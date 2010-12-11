@@ -67,12 +67,11 @@ Edge.prototype.calcEdge = function calcEdge(pb, pc, pa, pa2) {
 
     } 
 
-    return delta;
+    return Math.abs(delta);
 };
 
 
 Edge.prototype.buildPixel = function buildPixel(index, offset, acc) {
-
 
     var pixels = this.pixels; 
     var red = index ;
@@ -94,8 +93,6 @@ Edge.prototype.buildPixel = function buildPixel(index, offset, acc) {
     var pa2 = pixels[red + offset*2] * 0.30 +
         pixels[green + offset*2] * 0.59 + 
         pixels[blue + offset*2] * 0.11;
-
-    //var edge = this.calcEdge(pb, pc, pa, pa2);
 
     var deltaL = pc - pb;  // ∆L ≡ in − in−1
     var deltaR = pa2 - pa; // ∆R ≡ in+2 − in+1
@@ -128,21 +125,21 @@ Edge.prototype.buildPixel = function buildPixel(index, offset, acc) {
             delta = deltaC;
         } else {
             delta = deltaC - (deltaL < deltaR ? deltaR: deltaL);
-            if (delta > 0) {
-                delta = 0;
-            } else if (delta <= deltaC) {
+            if (delta <= deltaC) {
                 delta = deltaC;
+            } else if  (delta > 0) {
+                delta = 0;  
             }
         }
-
     } 
 
-    var edge = delta;
+    var edge = Math.abs(delta);
+    var data = acc.data;
 
-    acc.data[index]   = edge;
-    acc.data[index+1] = edge;
-    acc.data[index+2] = edge;
-    acc.data[index+3] = 255;
+    data[index]   = edge;
+    data[index+1] = edge;
+    data[index+2] = edge;
+    data[index+3] = 255;
 
     }
 
@@ -169,6 +166,35 @@ Edge.prototype.mapHorizontal = function mapHorizontal() {
     }
 };
 
+Edge.prototype.mapMagnitude = function mapMagnitude() {
+
+    var vData = this.verticalData.data;
+    var hData = this.horizontalData.data;
+    var mData = this.magnitudeData.data;
+
+    for (var i = vData.length -4; i >= 0; i-=4) {
+
+        var result = 0;
+
+        if (i < this.width * 4 || i < vData.length - 4 * this.width) {
+
+            var up = hData[i - this.width * 4];
+            var down = hData[i + this.width * 4];
+            var left = vData[i];
+            var right = vData[i + 4];
+
+            var vav = (up + down)/2;
+            var hav = (left + right)/2;
+
+            result = Math.sqrt(Math.pow(vav,2) + Math.pow(hav,2));
+        }
+
+        mData[i] = result;
+        mData[i+1] = result;
+        mData[i+2] = result;
+        mData[i+3] = 255;
+    }
+}
 
 /**
  * add together 30% of the red value, 59% of the green value,
@@ -204,53 +230,13 @@ Edge.prototype.getRGBPixel = function getRGBPixel(pixels, index, offset) {
  * @param {Integer} alpha Value for alpha component of pixel
  */
 Edge.prototype.writePixel = function writePixel(imageData, index, red, green, blue, alpha) {
-    imageData.data[index]   = red;
-    imageData.data[index+1] = green || red;
-    imageData.data[index+2] = blue  || red;
-    imageData.data[index+3] = alpha || 255;
+    var data = imageData.data;
+    data[index]   = red;
+    data[index+1] = green || red;
+    data[index+2] = blue  || red;
+    data[index+3] = alpha || 255;
 };
 
-Edge.prototype.magnitude = function magnitude() {
-
-    var vData = this.verticalData.data;
-    var hData = this.horizontalData.data;
-    var mData = this.magnitudeData.data;
-
-    for (var i = 0; i < (vData.length - 4); i+=4) {
-
-        var result = Math.abs(vData[i]) + Math.abs(hData[i]); 
-        mData[i] = result;
-        mData[i+1] = result;
-        mData[i+2] = result;
-        mData[i+3] = 255;
-    }
-}
-
-Edge.prototype.mapMagnitude = function mapMagnitude() {
-
-    var vData = this.verticalData.data;
-    var hData = this.horizontalData.data;
-    var mData = this.magnitudeData.data;
-
-    for (var i = 0; i < (vData.length - 4); i+=4) {
-
-        var up = hData[i - this.width *4];
-        var down = hData[i + this.width *4];
-        var left = vData[i - 4];
-        var right = vData[i + 4];
-
-        var vAv = (up + down)/2;
-        var hAv = (left + right)/2;
-
-        var result = Math.abs(Math.sqrt(vAv*vAv + hAv*hAv) - 255) || 255;
-        
-        //var result = (Math.abs(vAv) + Math.abs(hAv));
-        mData[i] = result;
-        mData[i+1] = result;
-        mData[i+2] = result;
-        mData[i+3] = 255;
-    }
-}
 
 
 
