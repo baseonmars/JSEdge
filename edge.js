@@ -21,10 +21,10 @@ var Edge = function (image, canvas) {
 
 /**
  * 
- * @param {Integer} pb Pixel directly before the center pixel
- * @param {Integer} pc Center Pixel
- * @param {Integer} pa Pixel directly after the center pixel
- * @param {integer} pa2 Pixel after pr
+ * @param {Number} pb Pixel directly before the center pixel
+ * @param {Number} pc Center Pixel
+ * @param {Number} pa Pixel directly after the center pixel
+ * @param {Number} pa2 Pixel after pr
  */
 Edge.prototype.calculate = function calculate(pb, pc, pa, pa2) {
 
@@ -163,16 +163,16 @@ Edge.prototype.mapSeamCost = function mapSeamCost() {
  * add together 30% of the red value, 59% of the green value,
  * and 11% of the blue value
  *
- * @pixel {RBGPixel} pixel An Object with red, green and blue keys
+ * @param {Object} pixel An Object with red, green and blue keys
  */
 Edge.prototype.greyscale = function greyscale(pixel) {
     return pixel['red'] * 0.30 + pixel['green'] * 0.59 + pixel['blue'] * 0.11;
 };
 
 /**
- * @param {PixelArray} pixels
- * @param {Integer} index Index of first pixel
- * @param {Integer} offset Offset of pixel from rgb index
+ * @param {Object} pixels
+ * @param {Number} index Index of first pixel
+ * @param {Number} offset Offset of pixel from rgb index
  */
 Edge.prototype.getRGBPixel = function getRGBPixel(pixels, index, offset) {
 
@@ -185,11 +185,11 @@ Edge.prototype.getRGBPixel = function getRGBPixel(pixels, index, offset) {
 
 /**
  * @param {ImageData} imageDate The image data to be written too
- * @param {Integer} index Start position of the pixel
- * @param {Integer} red Value for red component of pixel
- * @param {Integer} green Value for green component of pixel
- * @param {Integer} blue Value for blue component of pixel
- * @param {Integer} alpha Value for alpha component of pixel
+ * @param {Number} index Start position of the pixel
+ * @param {Number} red Value for red component of pixel
+ * @param {Number} green Value for green component of pixel
+ * @param {Number} blue Value for blue component of pixel
+ * @param {Number} alpha Value for alpha component of pixel
  */
 Edge.prototype.writePixel = function writePixel(imageData, index, red, green, blue, alpha) {
     var data = imageData.data;
